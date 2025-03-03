@@ -1,0 +1,2 @@
+flask==2.3.3
+python-constraint==1.4.0

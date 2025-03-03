@@ -1,0 +1,395 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>University Timetable Scheduler</title>
+  <script src="https://unpkg.com/htmx.org@1.9.2"></script>
+  <script src="https://unpkg.com/tailwindcss@^2.2.19/dist/tailwind.min.js"></script>
+  <style>
+    /* Custom styles as needed */
+    .timetable-cell {
+      min-height: 100px;
+      transition: background-color 0.3s ease;
+    }
+    .timetable-cell:hover {
+      background-color: #f3f4f6; /* Tailwind gray-100 */
+    }
+  </style>
+</head>
+<body class="bg-gray-100">
+  <div class="container mx-auto p-4">
+    <h1 class="text-3xl font-bold mb-6 text-center">
+      University Timetable Scheduler
+    </h1>
+
+    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+      <h2 class="text-xl font-semibold mb-4">Configure Constraints</h2>
+
+      <form
+        id="constraint-form"
+        hx-post="/generate-timetable"
+        hx-trigger="submit"
+        hx-target="#timetable-results"
+        hx-indicator="#spinner"
+      >
+        <!-- Instructor Availability Section -->
+        <div class="mb-6">
+          <h3 class="text-lg font-medium mb-2">Instructor Availability</h3>
+
+          {% for instructor in data.instructors %}
+          <div class="mb-4 p-4 border rounded">
+            <h4 class="font-medium mb-2">{{ instructor }}</h4>
+            <div class="grid grid-cols-5 gap-2">
+              {% for time_slot in data.time_slots %}
+              <label class="flex items-center">
+                <input
+                  type="checkbox"
+                  class="instructor-availability mr-2"
+                  data-instructor="{{ instructor }}"
+                  data-time-slot="{{ time_slot }}"
+                  checked
+                />
+                <span class="text-sm">{{ time_slot }}</span>
+              </label>
+              {% endfor %}
+            </div>
+            <input type="hidden" name="availability_{{ instructor }}" id="availability_{{ instructor }}" />
+          </div>
+          {% endfor %}
+        </div>
+
+        <!-- Instructor Expertise Section -->
+        <div class="mb-6">
+          <h3 class="text-lg font-medium mb-2">Instructor Expertise</h3>
+
+          {% for instructor in data.instructors %}
+          <div class="mb-4 p-4 border rounded">
+            <h4 class="font-medium mb-2">{{ instructor }}</h4>
+            <div class="flex flex-wrap gap-4">
+              {% for program in data.programs %}
+              <label class="flex items-center">
+                <input
+                  type="checkbox"
+                  class="instructor-expertise mr-2"
+                  data-instructor="{{ instructor }}"
+                  data-program="{{ program }}"
+                  checked
+                />
+                <span>{{ program }}</span>
+              </label>
+              {% endfor %}
+            </div>
+            <input type="hidden" name="expertise_{{ instructor }}" id="expertise_{{ instructor }}" />
+          </div>
+          {% endfor %}
+        </div>
+
+        <div class="text-center">
+          <button
+            type="submit"
+            class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-6 rounded-lg"
+          >
+            Generate Timetable
+          </button>
+          <div id="spinner" class="htmx-indicator flex justify-center mt-4">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <div id="timetable-results"></div>
+
+    <template id="timetable-template">
+      <div class="bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-xl font-semibold mb-4">Generated Timetable</h2>
+
+        <div class="overflow-x-auto">
+          <table class="w-full border-collapse">
+            <thead>
+              <tr>
+                <th class="border p-2 bg-gray-100">Room / Time</th>
+                <!-- Time slots will be inserted here dynamically -->
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Timetable data will be inserted here dynamically -->
+            </tbody>
+          </table>
+        </div>
+
+        <div class="mt-6">
+          <h3 class="text-lg font-medium mb-2">Legend</h3>
+          <div class="flex flex-wrap gap-4">
+            <div class="flex items-center">
+              <div class="w-4 h-4 bg-blue-200 mr-2"></div>
+              <span>Computer Science</span>
+            </div>
+            <div class="flex items-center">
+              <div class="w-4 h-4 bg-green-200 mr-2"></div>
+              <span>Computer Security and Forensics</span>
+            </div>
+            <div class="flex items-center">
+              <div class="w-4 h-4 bg-yellow-200 mr-2"></div>
+              <span>Information Technology</span>
+            </div>
+            <div class="flex items-center">
+              <div class="w-4 h-4 bg-purple-200 mr-2"></div>
+              <span>Cross-cutting Course</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </template>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      // Initialize the form with the default values
+      updateInstructorInputs();
+
+      // Add event listeners to update hidden inputs when checkboxes change
+      document
+        .querySelectorAll(".instructor-availability, .instructor-expertise")
+        .forEach((checkbox) => {
+          checkbox.addEventListener("change", updateInstructorInputs);
+        });
+    });
+
+    function updateInstructorInputs() {
+      // Update availability hidden inputs
+      document.querySelectorAll(".instructor-availability").forEach((checkbox) => {
+        const instructor = checkbox.dataset.instructor;
+        const timeSlot = checkbox.dataset.timeSlot;
+        const hiddenInput = document.getElementById(`availability_${instructor}`);
+
+        // Get current values
+        let values = [];
+        try {
+          values = JSON.parse(hiddenInput.value || "[]");
+        } catch (e) {
+          values = [];
+        }
+
+        if (checkbox.checked && !values.includes(timeSlot)) {
+          values.push(timeSlot);
+        } else if (!checkbox.checked && values.includes(timeSlot)) {
+          values = values.filter((v) => v !== timeSlot);
+        }
+
+        hiddenInput.value = JSON.stringify(values);
+      });
+
+      // Update expertise hidden inputs
+      document.querySelectorAll(".instructor-expertise").forEach((checkbox) => {
+        const instructor = checkbox.dataset.instructor;
+        const program = checkbox.dataset.program;
+        const hiddenInput = document.getElementById(`expertise_${instructor}`);
+
+        // Get current values
+        let values = [];
+        try {
+          values = JSON.parse(hiddenInput.value || "[]");
+        } catch (e) {
+          values = [];
+        }
+
+        if (checkbox.checked && !values.includes(program)) {
+          values.push(program);
+        } else if (!checkbox.checked && values.includes(program)) {
+          values = values.filter((v) => v !== program);
+        }
+
+        hiddenInput.value = JSON.stringify(values);
+      });
+    }
+
+    // HTMX response handler for the timetable
+    document.body.addEventListener("htmx:afterSwap", function (event) {
+      if (event.detail.target.id === "timetable-results") {
+        const response = JSON.parse(event.detail.xhr.response);
+
+        if (response.success) {
+          renderTimetable(response.timetable);
+        } else {
+          document.getElementById("timetable-results").innerHTML = `
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-6">
+              <strong class="font-bold">Error:</strong>
+              <span class="block sm:inline">${response.message}</span>
+            </div>
+          `;
+        }
+      }
+    });
+
+    function renderTimetable(timetable) {
+      // Clone the template
+      const template = document.getElementById("timetable-template");
+      const timetableEl = template.content.cloneNode(true);
+
+      // Get the time slots and rooms
+      const timeSlots = Object.keys(timetable[Object.keys(timetable)[0]]);
+      const rooms = Object.keys(timetable);
+
+      // Add time slots to header
+      const headerRow = timetableEl.querySelector("thead tr");
+      timeSlots.forEach((timeSlot) => {
+        const th = document.createElement("th");
+        th.className = "border p-2 bg-blue-400";
+        th.textContent = timeSlot;
+        headerRow.appendChild(th);
+      });
+
+      // Add room rows with schedule
+      const tbody = timetableEl.querySelector("tbody");
+      rooms.forEach((room) => {
+        const tr = document.createElement("tr");
+
+        // Add room header
+        const th = document.createElement("th");
+        th.className = "border p-2 bg-violet-200 text-left";
+        th.textContent = room;
+        tr.appendChild(th);
+
+        // Add time slot cells
+        timeSlots.forEach((timeSlot) => {
+          const td = document.createElement("td");
+          td.className = "border p-2 timetable-cell";
+
+          const cellData = timetable[room][timeSlot];
+          if (cellData) {
+            // Determine background color based on programs
+            let bgColor = "bg-blue-600";
+            const programs = cellData.programs;
+
+            if (programs.length > 1) {
+              bgColor = "bg-purple-200"; // Cross-cutting
+            } else if (programs.includes("Computer Science")) {
+              bgColor = "bg-blue-200";
+            } else if (programs.includes("Computer Security and Forensics")) {
+              bgColor = "bg-green-200";
+            } else if (programs.includes("Information Technology")) {
+              bgColor = "bg-yellow-200";
+            }
+
+            td.className += ` ${bgColor}`;
+
+            // Create content
+            td.innerHTML = `
+              <div class="font-medium">${cellData.course}</div>
+              <div class="text-sm">${cellData.instructor}</div>
+              <div class="text-xs">${programs.join(", ")}</div>
+            `;
+          }
+
+          tr.appendChild(td);
+        });
+
+        tbody.appendChild(tr);
+      });
+
+      // Add to the results div
+      document.getElementById("timetable-results").innerHTML = "";
+      document.getElementById("timetable-results").appendChild(timetableEl);
+    }
+  </script>
+
+    <!-- Additional JS for interactivity and styling enhancements -->
+    <script>
+        // Helper function to convert a 24-hour time (HH:MM) to 12-hour AM/PM format.
+        function convertTo12Hour(timeStr) {
+          // If no colon is found, return the original string
+          if (!timeStr.includes(":")) return timeStr;
+          // Split and trim parts to handle extra spaces
+          const parts = timeStr.split(":").map(s => s.trim());
+          let hour = parseInt(parts[0], 10);
+          let minute = parts[1] || "00";
+          // If parsing fails, return the original string
+          if (isNaN(hour)) return timeStr;
+          const period = hour >= 12 ? "PM" : "AM";
+          hour = hour % 12;
+          if (hour === 0) hour = 12;
+          return `${hour}:${minute} ${period}`;
+        }
+    
+        // Format header cells to display time in AM/PM format.
+        function formatTableHeaders() {
+          const headerRow = document.querySelector("thead tr");
+          if (!headerRow) return;
+          // Skip the first header cell ("Room / Time")
+          const headers = headerRow.querySelectorAll("th");
+          for (let i = 1; i < headers.length; i++) {
+            let text = headers[i].textContent.trim();
+            // If the header text contains a hyphen, assume it's a range (e.g., "09:00-10:00")
+            if (text.includes("-")) {
+              const parts = text.split("-").map(p => p.trim());
+              headers[i].textContent =
+                convertTo12Hour(parts[0]) + " - " + convertTo12Hour(parts[1]);
+            } else {
+              // If the text looks like a time (e.g., "09:00") or a day/time combo (e.g., "Monday 09:00")
+              const regex = /^\d{2}:\d{2}$/;
+              if (regex.test(text)) {
+                headers[i].textContent = convertTo12Hour(text);
+              } else if (text.includes(" ")) {
+                const dayTime = text.split(" ");
+                if (dayTime.length >= 2 && /^\d{2}:\d{2}$/.test(dayTime[1])) {
+                  headers[i].textContent = dayTime[0] + " " + convertTo12Hour(dayTime[1]);
+                }
+              }
+            }
+          }
+        }
+    
+        // Reorder table columns so that days (if present) are arranged from Monday to Friday.
+        function reorderTableColumns() {
+          const table = document.querySelector("#timetable-results table");
+          if (!table) return;
+          const headerRow = table.querySelector("thead tr");
+          if (!headerRow) return;
+    
+          // Define desired day order.
+          const daysOrder = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+    
+          // Get header cells (skip the first cell)
+          const headerCells = Array.from(headerRow.children);
+          const dayCells = headerCells.slice(1).map((cell, index) => {
+            const dayText = cell.textContent.trim().split(" ")[0]; // Assume the first word is the day
+            return { index: index + 1, day: dayText, cell: cell };
+          });
+    
+          // Only reorder if at least one header cell matches one of the days.
+          if (dayCells.some((dc) => daysOrder.includes(dc.day))) {
+            dayCells.sort((a, b) => daysOrder.indexOf(a.day) - daysOrder.indexOf(b.day));
+    
+            // Rebuild the header row.
+            const newHeaderCells = [headerCells[0]];
+            dayCells.forEach((dc) => newHeaderCells.push(dc.cell));
+    
+            headerRow.innerHTML = "";
+            newHeaderCells.forEach((cell) => headerRow.appendChild(cell));
+    
+            // Reorder each row in tbody.
+            const tbodyRows = table.querySelectorAll("tbody tr");
+            tbodyRows.forEach((row) => {
+              const cells = Array.from(row.children);
+              const newRowCells = [cells[0]];
+              dayCells.forEach((dc) => newRowCells.push(cells[dc.index]));
+              row.innerHTML = "";
+              newRowCells.forEach((cell) => row.appendChild(cell));
+            });
+          }
+        }
+    
+        // After the timetable is rendered by HTMX, format headers and reorder columns.
+        document.body.addEventListener("htmx:afterSwap", function (event) {
+          if (event.detail.target.id === "timetable-results") {
+            formatTableHeaders();
+            reorderTableColumns();
+          }
+        });
+      </script>
+    
+</body>
+</html>
