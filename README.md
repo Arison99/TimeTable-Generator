@@ -26,7 +26,7 @@
 
 1. Start the development server:
     ```sh
-    npm start
+    python app.py
     ```
 2. Open your browser and go to `http://localhost:5000`
 
