@@ -1,0 +1,19 @@
+{% for program, courses in course_units.items() %}
+<div class="bg-gray-200 p-2 rounded mb-2">
+    <h3 class="font-semibold">{{ program }}</h3>
+    <div class="grid grid-cols-3 gap-2 mt-2">
+        {% for course in courses %}
+        <div class="bg-gray-100 p-2 rounded flex justify-between items-center">
+            <span>{{ course }}</span>
+            <button 
+                hx-delete="/remove-course/{{ program }}/{{ course }}"
+                hx-target="#course-unit-list"
+                class="text-red-500 hover:text-red-700"
+            >
+                ✕
+            </button>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endfor %}

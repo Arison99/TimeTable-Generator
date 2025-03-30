@@ -1,0 +1,12 @@
+{% for program in programs %}
+<div class="bg-gray-100 p-2 rounded flex justify-between items-center">
+    <span>{{ program }}</span>
+    <button 
+        hx-delete="/remove-program/{{ program }}"
+        hx-target="#program-list"
+        class="text-red-500 hover:text-red-700"
+    >
+        ✕
+    </button>
+</div>
+{% endfor %}

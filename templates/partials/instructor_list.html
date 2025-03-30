@@ -1,0 +1,13 @@
+
+{% for instructor in instructors %}
+<div class="bg-gray-100 p-2 rounded flex justify-between items-center">
+    <span>{{ instructor }}</span>
+    <button 
+        hx-delete="/remove-instructor/{{ instructor }}"
+        hx-target="#instructor-list"
+        class="text-red-500 hover:text-red-700"
+    >
+        ✕
+    </button>
+</div>
+{% endfor %}

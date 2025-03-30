@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Scheduling Data Input</title>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-4xl mx-auto bg-white shadow-lg rounded-lg p-6">
+        <h1 class="text-2xl font-bold mb-6 text-center">Course Scheduling Data Input</h1>
+        
+        <div id="save-indicator" class="mb-4 text-center hidden">
+            <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
+                Data saved successfully
+            </span>
+        </div>
+        
+        <!-- Programs Input -->
+        <section class="mb-8">
+            <h2 class="text-xl font-semibold mb-4">Programs</h2>
+            <form 
+                hx-post="/add-programs" 
+                hx-target="#program-list"
+                hx-indicator="#save-indicator"
+                class="flex gap-4 mb-4"
+            >
+                <input 
+                    type="text" 
+                    name="program" 
+                    placeholder="Enter new program" 
+                    required
+                    class="flex-grow px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                <button 
+                    type="submit" 
+                    class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors"
+                >
+                    Add Program
+                </button>
+            </form>
+            <div id="program-list" class="grid grid-cols-3 gap-2">
+                <!-- Programs will be loaded here -->
+                {% include 'partials/program_list.html' with programs=data.programs %}
+            </div>
+        </section>
+
+        <!-- Course Units Input -->
+        <section class="mb-8">
+            <h2 class="text-xl font-semibold mb-4">Course Units</h2>
+            <form 
+                hx-post="/add-course-unit" 
+                hx-target="#course-unit-list"
+                class="flex gap-4 mb-4"
+            >
+                <select 
+                    name="program" 
+                    required
+                    class="px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                    <option value="">Select Program</option>
+                    {% for program in data.programs %}
+                    <option value="{{ program }}">{{ program }}</option>
+                    {% endfor %}
+                </select>
+                <input 
+                    type="text" 
+                    name="course_unit" 
+                    placeholder="Enter course unit code" 
+                    required
+                    class="flex-grow px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                <button 
+                    type="submit" 
+                    class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors"
+                >
+                    Add Course Unit
+                </button>
+            </form>
+            <div id="course-unit-list">
+                <!-- Course units will be dynamically loaded by program -->
+                {% if data.course_units %}
+                    {% include 'partials/course_unit_list.html' with course_units=data.course_units %}
+                {% endif %}
+            </div>
+        </section>
+
+        <!-- Cross-Cutting Courses Input -->
+        <section class="mb-8">
+            <h2 class="text-xl font-semibold mb-4">Cross-Cutting Courses</h2>
+            <form 
+                hx-post="/add-cross-cutting-course" 
+                hx-target="#cross-cutting-course-list"
+                class="flex gap-4 mb-4"
+            >
+                <input 
+                    type="text" 
+                    name="course_id" 
+                    placeholder="Course ID" 
+                    required
+                    class="px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                <select 
+                    name="programs" 
+                    multiple 
+                    required
+                    class="px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                    {% for program in data.programs %}
+                    <option value="{{ program }}">{{ program }}</option>
+                    {% endfor %}
+                </select>
+                <button 
+                    type="submit" 
+                    class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors"
+                >
+                    Add Cross-Cutting Course
+                </button>
+            </form>
+            <div id="cross-cutting-course-list">
+                <!-- Cross-cutting courses will be dynamically loaded -->
+                {% if data.cross_cutting_courses %}
+                    {% include 'partials/cross_cutting_list.html' with cross_cutting_courses=data.cross_cutting_courses %}
+                {% endif %}
+            </div>
+        </section>
+
+        <!-- Rooms Input -->
+        <section class="mb-8">
+            <h2 class="text-xl font-semibold mb-4">Rooms</h2>
+            <form 
+                hx-post="/add-room" 
+                hx-target="#room-list"
+                class="flex gap-4 mb-4"
+            >
+                <input 
+                    type="text" 
+                    name="room" 
+                    placeholder="Enter room name" 
+                    required
+                    class="flex-grow px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                <button 
+                    type="submit" 
+                    class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors"
+                >
+                    Add Room
+                </button>
+            </form>
+            <div id="room-list" class="grid grid-cols-4 gap-2">
+                <!-- Existing rooms will be dynamically loaded here -->
+                {% include 'partials/room_list.html' with rooms=data.rooms %}
+            </div>
+        </section>
+
+        <!-- Instructors Input -->
+        <section class="mb-8">
+            <h2 class="text-xl font-semibold mb-4">Instructors</h2>
+            <form 
+                hx-post="/add-instructor" 
+                hx-target="#instructor-list"
+                class="flex gap-4 mb-4"
+            >
+                <input 
+                    type="text" 
+                    name="instructor" 
+                    placeholder="Enter instructor name" 
+                    required
+                    class="flex-grow px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                <button 
+                    type="submit" 
+                    class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors"
+                >
+                    Add Instructor
+                </button>
+            </form>
+            <div id="instructor-list" class="grid grid-cols-3 gap-2">
+                <!-- Existing instructors will be dynamically loaded here -->
+                {% include 'partials/instructor_list.html' with instructors=data.instructors %}
+            </div>
+        </section>
+
+        <!-- Instructor Availability Input -->
+        <section class="mb-8">
+            <h2 class="text-xl font-semibold mb-4">Instructor Availability</h2>
+            <form 
+                hx-post="/add-instructor-availability" 
+                hx-target="#instructor-availability-list"
+                class="grid grid-cols-2 gap-4"
+            >
+                <select 
+                    name="instructor" 
+                    required
+                    class="px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                    <option value="">Select Instructor</option>
+                    {% for instructor in data.instructors %}
+                    <option value="{{ instructor }}">{{ instructor }}</option>
+                    {% endfor %}
+                </select>
+                <select 
+                    name="time_slots" 
+                    multiple 
+                    required
+                    class="px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                    {% for time_slot in data.time_slots %}
+                    <option value="{{ time_slot }}">{{ time_slot }}</option>
+                    {% endfor %}
+                </select>
+                <button 
+                    type="submit" 
+                    class="col-span-2 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors"
+                >
+                    Add Availability
+                </button>
+            </form>
+            <div id="instructor-availability-list">
+                <!-- Instructor availability will be dynamically loaded -->
+                {% if data.instructor_availability %}
+                    {% include 'partials/instructor_availability.html' with availabilities=data.instructor_availability %}
+                {% endif %}
+            </div>
+        </section>
+
+        <!-- Instructor Expertise Input -->
+        <section class="mb-8">
+            <h2 class="text-xl font-semibold mb-4">Instructor Expertise</h2>
+            <form 
+                hx-post="/add-instructor-expertise" 
+                hx-target="#instructor-expertise-list"
+                class="grid grid-cols-2 gap-4"
+            >
+                <select 
+                    name="instructor" 
+                    required
+                    class="px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                    <option value="">Select Instructor</option>
+                    {% for instructor in data.instructors %}
+                    <option value="{{ instructor }}">{{ instructor }}</option>
+                    {% endfor %}
+                </select>
+                <select 
+                    name="course_units" 
+                    multiple 
+                    required
+                    class="px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                    {% for program, courses in data.course_units.items() %}
+                        {% for course in courses %}
+                        <option value="{{ course }}">{{ program }}: {{ course }}</option>
+                        {% endfor %}
+                    {% endfor %}
+                </select>
+                <button 
+                    type="submit" 
+                    class="col-span-2 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors"
+                >
+                    Add Expertise
+                </button>
+            </form>
+            <div id="instructor-expertise-list">
+                <!-- Instructor expertise will be dynamically loaded -->
+                {% if data.instructor_expertise %}
+                    {% include 'partials/instructor_expertise.html' with expertise=data.instructor_expertise %}
+                {% endif %}
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // Show save indicator when data is saved
+        htmx.on("htmx:afterRequest", function(evt) {
+            if (evt.detail.successful) {
+                const indicator = document.getElementById('save-indicator');
+                indicator.classList.remove('hidden');
+                
+                setTimeout(function() {
+                    indicator.classList.add('hidden');
+                }, 2000);
+            }
+        });
+    </script>
+</body>
+</html>

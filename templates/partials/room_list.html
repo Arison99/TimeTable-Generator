@@ -1,0 +1,13 @@
+
+{% for room in rooms %}
+<div class="bg-gray-100 p-2 rounded flex justify-between items-center">
+    <span>{{ room }}</span>
+    <button 
+        hx-delete="/remove-room/{{ room }}"
+        hx-target="#room-list"
+        class="text-red-500 hover:text-red-700"
+    >
+        ✕
+    </button>
+</div>
+{% endfor %}

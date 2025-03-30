@@ -1,0 +1,14 @@
+
+{% for course in cross_cutting_courses %}
+<div class="bg-gray-100 p-2 rounded mb-2">
+    <div class="font-semibold">{{ course.id }}</div>
+    <div class="text-sm">Programs: {{ course.programs|join(', ') }}</div>
+    <button 
+        hx-delete="/remove-cross-cutting/{{ loop.index0 }}"
+        hx-target="#cross-cutting-course-list"
+        class="text-red-500 hover:text-red-700 text-sm"
+    >
+        Remove
+    </button>
+</div>
+{% endfor %}

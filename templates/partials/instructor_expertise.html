@@ -1,0 +1,266 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Scheduling Data Input</title>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-4xl mx-auto bg-white shadow-lg rounded-lg p-6">
+        <h1 class="text-2xl font-bold mb-6 text-center">Course Scheduling Data Input</h1>
+        
+        <!-- Programs Input -->
+        <section class="mb-8">
+            <h2 class="text-xl font-semibold mb-4">Programs</h2>
+            <form 
+                hx-post="/add-programs" 
+                hx-target="#program-list"
+                class="flex gap-4 mb-4"
+            >
+                <input 
+                    type="text" 
+                    name="program" 
+                    placeholder="Enter new program" 
+                    required
+                    class="flex-grow px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                <button 
+                    type="submit" 
+                    class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors"
+                >
+                    Add Program
+                </button>
+            </form>
+            <div id="program-list" class="grid grid-cols-3 gap-2">
+                <!-- Existing programs will be dynamically loaded here -->
+                <template x-for="program in programs">
+                    <div class="bg-gray-100 p-2 rounded flex justify-between items-center">
+                        <span x-text="program"></span>
+                        <button 
+                            hx-delete={`/remove-program/${program}`} 
+                            class="text-red-500 hover:text-red-700"
+                        >
+                            ✕
+                        </button>
+                    </div>
+                </template>
+            </div>
+        </section>
+
+        <!-- Course Units Input -->
+        <section class="mb-8">
+            <h2 class="text-xl font-semibold mb-4">Course Units</h2>
+            <form 
+                hx-post="/add-course-unit" 
+                hx-target="#course-unit-list"
+                class="flex gap-4 mb-4"
+            >
+                <select 
+                    name="program" 
+                    required
+                    class="px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                    <option value="">Select Program</option>
+                    <!-- Dynamically populate program options -->
+                </select>
+                <input 
+                    type="text" 
+                    name="course_unit" 
+                    placeholder="Enter course unit code" 
+                    required
+                    class="flex-grow px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                <button 
+                    type="submit" 
+                    class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors"
+                >
+                    Add Course Unit
+                </button>
+            </form>
+            <div id="course-unit-list">
+                <!-- Course units will be dynamically loaded by program -->
+            </div>
+        </section>
+
+        <!-- Cross-Cutting Courses Input -->
+        <section class="mb-8">
+            <h2 class="text-xl font-semibold mb-4">Cross-Cutting Courses</h2>
+            <form 
+                hx-post="/add-cross-cutting-course" 
+                hx-target="#cross-cutting-course-list"
+                class="flex gap-4 mb-4"
+            >
+                <input 
+                    type="text" 
+                    name="course_id" 
+                    placeholder="Course ID" 
+                    required
+                    class="px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                <select 
+                    name="programs" 
+                    multiple 
+                    required
+                    class="px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                    <!-- Dynamically populate program options -->
+                </select>
+                <button 
+                    type="submit" 
+                    class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors"
+                >
+                    Add Cross-Cutting Course
+                </button>
+            </form>
+            <div id="cross-cutting-course-list">
+                <!-- Cross-cutting courses will be dynamically loaded -->
+            </div>
+        </section>
+
+        <!-- Rooms Input -->
+        <section class="mb-8">
+            <h2 class="text-xl font-semibold mb-4">Rooms</h2>
+            <form 
+                hx-post="/add-room" 
+                hx-target="#room-list"
+                class="flex gap-4 mb-4"
+            >
+                <input 
+                    type="text" 
+                    name="room" 
+                    placeholder="Enter room name" 
+                    required
+                    class="flex-grow px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                <button 
+                    type="submit" 
+                    class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors"
+                >
+                    Add Room
+                </button>
+            </form>
+            <div id="room-list" class="grid grid-cols-4 gap-2">
+                <!-- Existing rooms will be dynamically loaded here -->
+            </div>
+        </section>
+
+        <!-- Instructors Input -->
+        <section class="mb-8">
+            <h2 class="text-xl font-semibold mb-4">Instructors</h2>
+            <form 
+                hx-post="/add-instructor" 
+                hx-target="#instructor-list"
+                class="flex gap-4 mb-4"
+            >
+                <input 
+                    type="text" 
+                    name="instructor" 
+                    placeholder="Enter instructor name" 
+                    required
+                    class="flex-grow px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                <button 
+                    type="submit" 
+                    class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors"
+                >
+                    Add Instructor
+                </button>
+            </form>
+            <div id="instructor-list" class="grid grid-cols-3 gap-2">
+                <!-- Existing instructors will be dynamically loaded here -->
+            </div>
+        </section>
+
+        <!-- Instructor Availability Input -->
+        <section class="mb-8">
+            <h2 class="text-xl font-semibold mb-4">Instructor Availability</h2>
+            <form 
+                hx-post="/add-instructor-availability" 
+                hx-target="#instructor-availability-list"
+                class="grid grid-cols-2 gap-4"
+            >
+                <select 
+                    name="instructor" 
+                    required
+                    class="px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                    <!-- Dynamically populate instructor options -->
+                </select>
+                <select 
+                    name="time_slots" 
+                    multiple 
+                    required
+                    class="px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                    <!-- Dynamically populate time slot options -->
+                </select>
+                <button 
+                    type="submit" 
+                    class="col-span-2 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors"
+                >
+                    Add Availability
+                </button>
+            </form>
+            <div id="instructor-availability-list">
+                <!-- Instructor availability will be dynamically loaded -->
+            </div>
+        </section>
+
+        <!-- Instructor Expertise Input -->
+        <section class="mb-8">
+            <h2 class="text-xl font-semibold mb-4">Instructor Expertise</h2>
+            <form 
+                hx-post="/add-instructor-expertise" 
+                hx-target="#instructor-expertise-list"
+                class="grid grid-cols-2 gap-4"
+            >
+                <select 
+                    name="instructor" 
+                    required
+                    class="px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                    <!-- Dynamically populate instructor options -->
+                </select>
+                <select 
+                    name="course_units" 
+                    multiple 
+                    required
+                    class="px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                    <!-- Dynamically populate course unit options -->
+                </select>
+                <button 
+                    type="submit" 
+                    class="col-span-2 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors"
+                >
+                    Add Expertise
+                </button>
+            </form>
+            <div id="instructor-expertise-list">
+                <!-- Instructor expertise will be dynamically loaded -->
+                {% for instructor, courses in expertise.items() %}
+                <div class="bg-gray-100 p-2 rounded mb-2">
+                    <div class="font-semibold">{{ instructor }}</div>
+                    <div class="text-sm">Courses: {{ courses|join(', ') }}</div>
+                    <button 
+                        hx-delete="/remove-expertise/{{ instructor }}"
+                        hx-target="#instructor-expertise-list"
+                        class="text-red-500 hover:text-red-700 text-sm"
+                    >
+                        Remove
+                    </button>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+    </div>
+
+    <script>
+        // Client-side validation and dynamic population could be added here
+        // This is a placeholder for potential JavaScript enhancements
+    </script>
+</body>
+</html>
